@@ -1,0 +1,114 @@
+{
+    "models": {
+        "denoiser": {
+            "name": "ElasticSLatFlowModel",
+            "args": {
+                "resolution": 32,
+                "in_channels": 40,
+                "out_channels": 40,
+                "model_channels": 1024,
+                "cond_channels": 1024,
+                "num_blocks": 24,
+                "num_heads": 16,
+                "mlp_ratio": 4,
+                "pe_mode": "ape",
+                "share_mod": false,
+                "initialization": "vanilla",
+                "qk_rms_norm": true,
+                "qk_rms_norm_cross": true,
+                "io_block_channels": [128],
+                "patch_size": 2,
+                "num_io_res_blocks": 2,
+                "use_skip_connection": true
+            }
+        }
+    },
+    "dataset": {
+        "name": "ERPStructuredLatentTexture",
+        "args": {
+            "latent_encoder": "pbr_enc_next_dc_c4s4_fp16_256",
+            "aug_bbox_range": [0, 4],
+            "max_num_voxels": 65536,
+            "visibility_threshold": 0.5,
+            "fov_degrees": 120.0,
+            "cubemap_image_size": 512,
+            "cubemap_folder": "cubic_fov_120",
+            "normalization": {
+                "mean": [
+                    -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+                    -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+                    -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+                    -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+                    -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5
+                ],
+                "std": [
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+                    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0
+                ]
+            }
+        }
+    },
+    "trainer": {
+        "name": "ERPAssetAwareSLatFlowMatchingCFGTrainer",
+        "args": {
+            "max_steps": 1000000,
+            "batch_size_per_gpu": 8,
+            "batch_split": 4,
+            "optimizer": {
+                "name": "AdamW",
+                "args": {
+                    "lr": 1e-4,
+                    "weight_decay": 0.0,
+                    "betas": [0.9, 0.999],
+                    "eps": 1e-8
+                }
+            },
+            "ema_rate": [
+                0.9999
+            ],
+            "mix_precision_mode": "amp",
+            "mix_precision_dtype": "bfloat16",
+            "elastic": {
+                "name": "LinearMemoryController",
+                "args": {
+                    "target_ratio": 0.75,
+                    "max_mem_ratio_start": 0.5
+                }
+            },
+            "grad_clip": {
+                "name": "AdaptiveGradClipper",
+                "args": {
+                    "max_norm": 1.0,
+                    "clip_percentile": 95
+                }
+            },
+            "i_log": 500,
+            "i_sample": 5000,
+            "i_save": 5000,
+            "p_uncond": 0.1,
+            "t_schedule": {
+                "name": "logitNormal",
+                "args": {
+                    "mean": 1.0,
+                    "std": 1.0
+                }
+            },
+            "sigma_min": 1e-5,
+            "image_cond_model": {
+                "name": "DinoV3FeatureExtractor",
+                "args": {
+                    "model_name": "facebook/dinov3-vitl16-pretrain-lvd1689m",
+                    "image_size": 512
+                }
+            },
+            "use_asset_aware_attention": true,
+            "tokens_per_face": 1029,
+            "fov_degrees": 120.0,
+            "expand_pixels": 28,
+            "overlap_margin": 0.02
+        }
+    }
+}
