@@ -61,10 +61,7 @@
             "confidence_threshold": 0.3,
             "iou_nms_threshold": 0.3,
             "min_sigma": 2.0,
-            "max_sigma": 4.0,
-            "finetune_ckpt": {
-                "bbox_centerpoint": "results/bbox_centerpoint/ckpts/bbox_centerpoint_ema0.9999_step0002500.pt"
-            }
+            "max_sigma": 4.0
         }
     }
 }

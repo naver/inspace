@@ -76,7 +76,7 @@ from a single ERP image, achieving strong performance across 3D and 2D metrics.
 - ✅ ERP-FRONT-30K dataset on Hugging Face ([`ERP-FRONT-30K`](https://huggingface.co/datasets/GwanHyeong/ERP-FRONT-30K))
 - ✅ Interactive Gradio demos (ERP-FRONT / Structured3D / ReplicaPano / custom)
 - ✅ Inference & evaluation pipeline
-- ✅ Training scripts (`scripts/train/`)
+- ✅ Training pipeline (`train.py`, `scripts/train/`)
 - ⬜ Dataset preprocessing pipeline (`data_toolkit/erp/`)
 <!-- - ⬜ arXiv paper
 - ⬜ Colab / Hugging Face Space demo -->
@@ -141,8 +141,9 @@ InSpace uses four checkpoints plus the base TRELLIS.2 weights:
 | `erp_slat_flow_img2shape_asset_aware_bf16/` | Asset shape | Stage 3 asset-aware shape generation |
 | `erp_slat_flow_imgshape2tex_asset_aware_bf16/` | Asset texture | Stage 3 asset-aware texture generation |
 
-> The base TRELLIS.2 / TRELLIS-image-large weights are pulled automatically from Hugging Face
-> (`microsoft/TRELLIS.2-4B`, `microsoft/TRELLIS-image-large`) as referenced in `configs/gen/`.
+> For **inference**, the base TRELLIS.2 / TRELLIS-image-large weights (`microsoft/TRELLIS.2-4B`,
+> `microsoft/TRELLIS-image-large`) are pulled automatically from Hugging Face. For **training**,
+> download them manually first — see [Training](#%EF%B8%8F-training).
 
 The processed dataset is released on Hugging Face as
 [**ERP-FRONT-30K**](https://huggingface.co/datasets/GwanHyeong/ERP-FRONT-30K); see
@@ -225,8 +226,16 @@ experimental variants are kept under `data_toolkit/erp/extra/`.
 
 ## 🏋️ Training
 
-Training is driven by `train.py` (see `--help` for distributed flags). Bash wrappers set the
-config and output dir for each stage:
+Training is driven by `train.py` (see `--help` for distributed flags). Bash wrappers under
+[`scripts/train/`](scripts/train/) set the config and output dir for each stage.
+
+Stage 1 and Stage 2 fine-tune from the **TRELLIS.2 base weights**, which the training configs
+read from a local `microsoft/TRELLIS.2-4B/` directory (the automatic Hugging Face download only
+applies to the inference pipeline). Download them once before training:
+
+```sh
+hf download microsoft/TRELLIS.2-4B --local-dir microsoft/TRELLIS.2-4B
+```
 
 ```sh
 # Coarse scene geometry (sparse structure)
@@ -243,7 +252,13 @@ bash scripts/train/stage2_texture.sh            # stage2_texture_resume_weighted
 
 The `*_weighted` script enables **room-area weighted sampling** (oversamples large rooms, see
 `--sampler`). Training writes to `results/…`, while released or served weights live in
-`ckpts/…`. 
+`ckpts/…`.
+
+The bbox estimator trains **from scratch** by default. To fine-tune from the released checkpoint
+instead, add a `finetune_ckpt` entry pointing to
+`ckpts/bbox_centerpoint/ckpts/bbox_centerpoint_ema0.9999_step0024500.pt` to
+[`configs/bbox/erp_bbox_centerpoint_v2.json`](configs/bbox/erp_bbox_centerpoint_v2.json)
+(see the comment in [`scripts/train/bbox.sh`](scripts/train/bbox.sh)).
 
 
 ## 📊 Evaluation
@@ -285,7 +300,7 @@ InSpace/
 ├── datasets/             # (stubs) place ERP_3D_FRONT / _test here
 ├── o-voxel/              # vendored O-Voxel package
 ├── tools/                # standalone analysis / visualization utilities
-├── figures/              # doc images 
+├── figures/              # doc images
 └── train.py              # training entrypoint
 ```
 

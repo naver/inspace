@@ -34,10 +34,8 @@ MASTER_ADDR=${MASTER_ADDR:-"localhost"}
 MASTER_PORT=${MASTER_PORT:-"12346"}
 
 # GPU settings
-# GPU_IDS='3,5,6,7'
-# NUM_GPUS=4
-GPU_IDS='4,5'
-NUM_GPUS=2
+GPU_IDS='0,1,2,3'  # Set to your available GPU ids (NUM_GPUS must match)
+NUM_GPUS=4
 
 
 # Print configuration

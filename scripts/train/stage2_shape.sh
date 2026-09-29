@@ -35,8 +35,8 @@ MASTER_ADDR=${MASTER_ADDR:-"localhost"}  # Default to localhost if not set
 MASTER_PORT=${MASTER_PORT:-"12345"}       # Default to 12345 if not set
 
 # GPU settings
-GPU_IDS='1,2,3,5,6,7'  # Change this to your desired GPU numbers (excluding GPU 4 which has issues)
-NUM_GPUS=6  # Number of GPUs per node
+GPU_IDS='0,1,2,3'  # Set to your available GPU ids (NUM_GPUS must match)
+NUM_GPUS=4         # Number of GPUs per node
 
 # Print configuration
 echo "=========================================="

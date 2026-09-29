@@ -28,8 +28,15 @@ MASTER_ADDR=${MASTER_ADDR:-"localhost"}
 MASTER_PORT=${MASTER_PORT:-"12348"}
 
 # GPU settings - CenterPoint is lightweight, 1 GPU is sufficient
-GPU_IDS='2'
+GPU_IDS='0'  # Set to your available GPU id(s), e.g. '0' or '0,1'
 NUM_GPUS=1
+
+# The default config trains from scratch. To fine-tune from the released
+# checkpoint instead (downloaded via `hf download GwanHyeong/InSpace --include "ckpts/*" --local-dir .`),
+# add the following entry to the "args" section of $CONFIG:
+#   "finetune_ckpt": {
+#       "bbox_centerpoint": "ckpts/bbox_centerpoint/ckpts/bbox_centerpoint_ema0.9999_step0024500.pt"
+#   }
 
 # Print configuration
 echo "=========================================="
